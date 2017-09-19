@@ -1,0 +1,53 @@
+maskA = (imageA>2);
+maskA = processmask(maskA);
+maskB = processmask(imageB>2);
+a = 10*R;
+b = 15/4*R;
+theta = 0:0.01:pi/2;
+beta = (cos(theta).^2/a^2+sin(theta).^2/b^2);
+alpha = sin(2*theta)*(1/a^2-1/b^2);
+gamma = (cos(theta).^2/b^2+sin(theta).^2/a^2);
+guessthick = 4*sqrt(beta./(4*gamma.*beta-alpha.^2));
+[downA, upA] = bound(maskA);
+thetaA = upA-downA;
+guessthetaA = zeros(1,180);
+for i = 1:180
+    guessthetaA(i) = 0.01 * find(guessthick-thetaA(i)>0, 1 );
+end
+guessthetaA(1:60) = pi - guessthetaA(1:60);
+guessthetaA(150:180) = - guessthetaA(150:180);
+figure
+plot(guessthetaA);
+P = polyfit(1:180, guessthetaA, 1);
+guessthetaA = polyval(P, 1:180);
+hold on
+plot(guessthetaA);
+guesscenterA = (downA + upA) / 2;
+tempmaskB = expandmask(maskB,5);
+tempA = (processmask(imageA>20) & ~tempmaskB);
+thetaA = zeros(1,180);
+centerA = zeros(1,180);
+LA = zeros(1,180);
+for i = 1:180
+    x = find(tempA(:,i));
+   [centerA(i), thetaA(i), LA(i)] = gradientoval(x, data(x,i),guesscenterA(i), guessthetaA(i), lambda, a, b, 1e-5);
+    if isreal(LA(i)) && abs(LA(i))>1e-6 && abs(LA(i))<1e-3
+        [centerA(i), thetaA(i), LA(i)] = gradientoval(x, data(x,i),centerA(i), thetaA(i), lambda, a, b, 1e-6);
+    end
+    if isnan(LA(i)) || abs(LA(i)) > 1e-6 || ~isreal(LA(i))
+        [centerA(i), thetaA(i), LA(i)] = gradientoval(x, data(x,i),guesscenterA(i), guessthetaA(i), lambda, a, b, 1e-6);
+    end
+    if isnan(LA(i)) || abs(LA(i)) > 1e-6 || ~isreal(LA(i))
+        [centerA(i), thetaA(i), LA(i)] = gradientoval(x, data(x,i),guesscenterA(i), guessthetaA(i), lambda, a, b, 1e-7);
+    end
+    if isnan(LA(i)) || abs(LA(i)) > 1e-6 || ~isreal(LA(i))
+        [centerA(i), thetaA(i), LA(i)] = gradientoval(x, data(x,i),guesscenterA(i), guessthetaA(i), lambda, a, b, 1e-8);
+    end
+end
+
+figure
+plot(centerA);
+figure
+plot(thetaA);
+
+disp('step2 finishs');
