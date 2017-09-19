@@ -1,0 +1,66 @@
+d2 = xlsread('p2.xlsx');
+d2 = d2(end:-1:1,:);
+ttdata2 = zeros(1000,180);
+ttdata2(245:756,:) = d2;
+
+IR2 = iradon(ttdata2/lambda, (thetaO-pi/2)/pi*180,'Hamming');
+
+d1 = data;
+d1 = d1(end:-1:1,:);
+ttdata1 = zeros(1000,180);
+ttdata1(245:756,:) = d1;
+
+IR1 = iradon(ttdata1/lambda, (thetaO-pi/2)/pi*180,'Hamming');
+
+d3 = xlsread('p3.xlsx');
+d3 = d3(end:-1:1,:);
+ttdata3 = zeros(1000,180);
+ttdata3(245:756,:) = d3;
+
+IR3 = iradon(ttdata3/lambda, (thetaO-pi/2)/pi*180,'Hamming');
+
+[X,Y] = meshgrid(-352.5:352.5,-352.5:352.5);
+[DX,DY] = meshgrid(((-127.5:127.5)/256*100/4*R+abs(x)/4*R),((-127.5:127.5)/256*100/4*R+abs(y)/4*R));
+
+
+RB1 = interp2(X,Y,IR1,DX,DY,'cubic');
+RB2 = interp2(X,Y,IR2,DX,DY,'cubic');
+RB3 = interp2(X,Y,IR3,DX,DY,'cubic');
+
+RB1(RB1<0.02) = 0;
+RB2(RB2<0.02) = 0;
+RB3(RB3<0) = 0;
+
+xlswrite('problem2.xls', RB2);
+xlswrite('problem3.xls', RB3);
+
+figure
+imshow(RB1/max(max(RB1)));
+figure
+imshow(RB2/max(max(RB2)));
+figure
+imshow(RB3/max(max(RB3)));
+
+Point = [10.0000, 18.0000 ;
+    34.5000 ,25.0000; 
+43.5000 ,33.0000; 
+45.0000 ,75.5000; 
+48.5000 ,55.5000 ;
+50.0000 ,75.5000 ;
+56.0000 ,76.5000 ;
+65.5000 ,37.0000 ;
+79.5000 ,18.0000 ;
+98.5000 ,43.5000 ;];
+
+Point = Point - 50;
+Point = Point/4*R;
+PX = Point(:,1);
+PY = Point(:,2);
+
+VALUE2 = interp2(X,Y,IR2,PX,PY,'cubic');
+VALUE3 = interp2(X,Y,IR3,PX,PY,'cubic');
+
+VALUE2(VALUE2<0) = 0;
+VALUE3(VALUE3<0) = 0;
+
+disp('step5 finishs');
