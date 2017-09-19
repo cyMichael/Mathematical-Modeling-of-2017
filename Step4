@@ -1,0 +1,23 @@
+ [distanceA, phiA, biasA] = sinfit(thetaA, centerA, 40.4325, -2.1659, 256.5000, 1e-5)
+ [distanceB, phiB, biasB] = sinfit(thetaA, centerB, 197.3870, -1.6859, 256.5000, 1e-7);
+ [distanceB, phiB, biasB] = sinfit(thetaA, centerB, distanceB, phiB, biasB, 1e-8)
+ 
+ dA = distanceA/R*4
+dB = distanceB/R*4
+
+cosalphaA = (dA^2+45^2-dB^2)/2/dA/45;
+alphaA = acos(cosalphaA);
+
+x = cosalphaA*dA
+y = sqrt(1-cosalphaA*cosalphaA)*dA
+
+cosalphaB = (dB^2+45^2-dA^2)/2/dB/45;
+alphaB = acos(cosalphaB);
+
+cosalphaO = (dB^2+dA^2-45^2)/2/dB/dA;
+alphaO = acos(cosalphaO)
+
+thetaO = pi/2-thetaA;
+
+
+ disp('step4 finishs');
