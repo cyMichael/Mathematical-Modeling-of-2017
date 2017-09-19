@@ -1,0 +1,59 @@
+data = xlsread('B.xlsx');
+
+imageA = data;
+
+location = zeros(1,180);
+location(180) = 81;
+
+B = data(81:81+28,180);
+
+for i = 179:-1:1
+    C = zeros(1,512-39);
+    for j = 1:(512-29)
+        if (i < 100 && j<location(i+1)) || abs(j-location(i+1)) > 10
+            C(j) = 1e10;
+            continue;
+        end
+        temp = data(:,i);
+        temp(j:j+28) = temp(j:j+28)-B;
+        error = temp(2:end)-temp(1:end-1);
+        error = error' * error;
+        C(j) = error;
+    end
+    [~,b] = min(C);
+    location(i) = b;
+    imageA(b:b+28,i) = imageA(b:b+28,i) - B;
+end
+
+imageA(81:81+28,180) = imageA(81:81+28,180) - B;
+
+imageB = data - imageA;
+
+figure
+imshow(imageA/max(max(imageA)));
+figure
+imshow(imageB/max(max(imageB)));
+
+
+N = 68;
+
+Rn = zeros(1,N);
+lambdan = zeros(1,21);
+
+for testn = 180:-1:(181-N)
+[lambda, R, a, L] = gradient(0.00001,data((location(testn)+1):(location(testn)+27),testn)');
+Rn(181-testn) = R;
+lambdan(181-testn) = lambda;
+end
+
+mean(Rn)
+var(Rn)
+mean(lambdan)
+var(lambdan)
+
+R = mean(Rn)
+lambda = mean(lambdan)
+
+centercircleB = location + R;
+
+disp('step1 finishs');
