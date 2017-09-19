@@ -1,0 +1,45 @@
+newimageA = zeros(512,180);
+
+%rebuild
+for i = 1:180
+    for j = 1:512
+        if j < downA(i) - 5 || j > upA(i) + 5
+            continue
+        end
+        f = sin(2*thetaA(i))*(j-centerA(i))*(1/a^2-1/b^2);
+        g = cos(thetaA(i))^2/a^2 + sin(thetaA(i))^2/b^2;
+        h = (cos(thetaA(i))^2/b^2 + sin(thetaA(i))^2/a^2) * (j-centerA(i)).^2-1;
+        if f*f-4*g*h > 0
+            s = sqrt(f*f-4*g*h);
+            ydot = lambda*s/g;
+            newimageA(j,i) = ydot;
+        end
+    end
+end
+
+newimageB = data - newimageA;
+newimageB(~tempmaskB) = 0;
+figure
+imshow(newimageA);
+figure
+imshow(newimageB);
+
+centerB = zeros(1,180);
+tempB = processmask(newimageB>6);
+
+LB = zeros(1,180);
+for i = 1:180
+    x = find(tempB(:,i));
+    [centerB(i), LB(i)] = gradientB(x, newimageB(x,i), centercircleB(i), lambda, R, 1e-5);
+    if isnan(LB(i)) || abs(LB(i)) > 1e-3 || ~isreal(LB(i))
+        [centerB(i), LB(i)] = gradientB(x, newimageB(x,i), centercircleB(i), lambda, R, 1e-6);
+    end
+    if isnan(LB(i)) || abs(LB(i)) > 1e-3 || ~isreal(LB(i))
+        [centerB(i), LB(i)] = gradientB(x, newimageB(x,i), centercircleB(i), lambda, R, 1e-7);
+    end
+    if isnan(LB(i)) || abs(LB(i)) > 1e-3 || ~isreal(LB(i))
+        [centerB(i), LB(i)] = gradientB(x, newimageB(x,i), centercircleB(i), lambda, R, 1e-9);
+    end
+end
+
+disp('step3 finishs');
