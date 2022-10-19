@@ -9,7 +9,7 @@ B = data(81:81+28,180);
 
 for i = 179:-1:1
     C = zeros(1,512-39);
-    for j = 1:(512-29)
+    fr j = 1:(512-29)
         if (i < 100 && j<location(i+1)) || abs(j-location(i+1)) > 10
             C(j) = 1e10;
             continue;
@@ -33,7 +33,6 @@ figure
 imshow(imageA/max(max(imageA)));
 figure
 imshow(imageB/max(max(imageB)));
-
 
 N = 68;
 
